@@ -77,6 +77,21 @@ class Calendar_Petsitting_Availability_Calculator {
             );
         }
         
+        // Get business hours unavailable slots
+        $business_hours_unavailable = $this->get_business_hours_unavailable_slots($from, $to);
+        foreach ($business_hours_unavailable as $slot) {
+            $events[] = array(
+                'id' => 'business-hours-' . $slot['date'] . '-' . $slot['type'],
+                'title' => __('Fermé', 'calendar-petsitting'),
+                'start' => $slot['start'],
+                'end' => $slot['end'],
+                'color' => '#343a40',
+                'display' => 'background',
+                'overlap' => false,
+                'constraint' => false
+            );
+        }
+        
         return $events;
     }
     
@@ -204,6 +219,85 @@ class Calendar_Petsitting_Availability_Calculator {
     }
     
     /**
+     * Get business hours unavailable slots expanded for the date range
+     */
+    private function get_business_hours_unavailable_slots($from, $to) {
+        $business_hours = get_option('calendar_petsitting_business_hours', array());
+        
+        if (empty($business_hours)) {
+            return array();
+        }
+        
+        $slots = array();
+        $timezone = get_option('calendar_petsitting_timezone', 'Europe/Paris');
+        
+        $start_date = new DateTime($from, new DateTimeZone($timezone));
+        $end_date = new DateTime($to, new DateTimeZone($timezone));
+        
+        $current_date = clone $start_date;
+        while ($current_date <= $end_date) {
+            $weekday = (int) $current_date->format('w'); // 0 = Sunday
+            
+            if (isset($business_hours[$weekday])) {
+                $day_hours = $business_hours[$weekday];
+                
+                if ($day_hours['closed']) {
+                    // Entire day is closed
+                    $start_datetime = clone $current_date;
+                    $end_datetime = clone $current_date;
+                    $start_datetime->setTime(0, 0, 0);
+                    $end_datetime->setTime(23, 59, 59);
+                    
+                    $slots[] = array(
+                        'date' => $current_date->format('Y-m-d'),
+                        'type' => 'closed',
+                        'start' => $this->format_datetime_for_fullcalendar($start_datetime->format('Y-m-d H:i:s')),
+                        'end' => $this->format_datetime_for_fullcalendar($end_datetime->format('Y-m-d H:i:s'))
+                    );
+                } else {
+                    // Add unavailable slots before opening time
+                    $open_time_parts = explode(':', $day_hours['open_time']);
+                    $close_time_parts = explode(':', $day_hours['close_time']);
+                    
+                    // Before opening hours
+                    if ($open_time_parts[0] > 0 || $open_time_parts[1] > 0) {
+                        $start_datetime = clone $current_date;
+                        $end_datetime = clone $current_date;
+                        $start_datetime->setTime(0, 0, 0);
+                        $end_datetime->setTime((int) $open_time_parts[0], (int) $open_time_parts[1], 0);
+                        
+                        $slots[] = array(
+                            'date' => $current_date->format('Y-m-d'),
+                            'type' => 'before_hours',
+                            'start' => $this->format_datetime_for_fullcalendar($start_datetime->format('Y-m-d H:i:s')),
+                            'end' => $this->format_datetime_for_fullcalendar($end_datetime->format('Y-m-d H:i:s'))
+                        );
+                    }
+                    
+                    // After closing hours
+                    if ($close_time_parts[0] < 23 || $close_time_parts[1] < 59) {
+                        $start_datetime = clone $current_date;
+                        $end_datetime = clone $current_date;
+                        $start_datetime->setTime((int) $close_time_parts[0], (int) $close_time_parts[1], 0);
+                        $end_datetime->setTime(23, 59, 59);
+                        
+                        $slots[] = array(
+                            'date' => $current_date->format('Y-m-d'),
+                            'type' => 'after_hours',
+                            'start' => $this->format_datetime_for_fullcalendar($start_datetime->format('Y-m-d H:i:s')),
+                            'end' => $this->format_datetime_for_fullcalendar($end_datetime->format('Y-m-d H:i:s'))
+                        );
+                    }
+                }
+            }
+            
+            $current_date->add(new DateInterval('P1D'));
+        }
+        
+        return $slots;
+    }
+    
+    /**
      * Check if a specific time slot is available
      *
      * @param string $start_datetime Start datetime
@@ -270,6 +364,11 @@ class Calendar_Petsitting_Availability_Calculator {
             return false;
         }
         
+        // Check business hours
+        if (!$this->is_within_business_hours($start_datetime, $end_datetime)) {
+            return false;
+        }
+        
         return true;
     }
     
@@ -306,6 +405,62 @@ class Calendar_Petsitting_Availability_Calculator {
         }
         
         return false;
+    }
+    
+    /**
+     * Check if the time slot is within business hours
+     */
+    private function is_within_business_hours($start_datetime, $end_datetime) {
+        $business_hours = get_option('calendar_petsitting_business_hours', array());
+        
+        if (empty($business_hours)) {
+            return true; // No business hours set, allow all times
+        }
+        
+        $start = new DateTime($start_datetime);
+        $end = new DateTime($end_datetime);
+        
+        // Check each day in the time slot
+        $current_date = clone $start;
+        while ($current_date < $end) {
+            $weekday = (int) $current_date->format('w'); // 0 = Sunday
+            
+            if (isset($business_hours[$weekday])) {
+                $day_hours = $business_hours[$weekday];
+                
+                // If the day is closed, reject the booking
+                if ($day_hours['closed']) {
+                    return false;
+                }
+                
+                // Check if the time is within business hours
+                $open_time_parts = explode(':', $day_hours['open_time']);
+                $close_time_parts = explode(':', $day_hours['close_time']);
+                
+                $day_start = clone $current_date;
+                $day_start->setTime((int) $open_time_parts[0], (int) $open_time_parts[1], 0);
+                
+                $day_end = clone $current_date;
+                $day_end->setTime((int) $close_time_parts[0], (int) $close_time_parts[1], 0);
+                
+                // Check if any part of the booking is outside business hours for this day
+                $booking_start_on_day = max($start, $day_start);
+                $booking_end_on_day = min($end, $day_end);
+                
+                // If booking starts before business hours or ends after business hours
+                if ($current_date->format('Y-m-d') === $start->format('Y-m-d') && $start < $day_start) {
+                    return false;
+                }
+                
+                if ($current_date->format('Y-m-d') === $end->format('Y-m-d') && $end > $day_end) {
+                    return false;
+                }
+            }
+            
+            $current_date->add(new DateInterval('P1D'));
+        }
+        
+        return true;
     }
     
     /**
