@@ -22,15 +22,23 @@ class Calendar_Petsitting_Unavailabilities_Admin {
         add_action('admin_post_petsitting_delete_unavailability', array($this, 'delete_unavailability'));
         add_action('admin_post_petsitting_save_recurring_unavailability', array($this, 'save_recurring_unavailability'));
         add_action('admin_post_petsitting_delete_recurring_unavailability', array($this, 'delete_recurring_unavailability'));
+        add_action('admin_post_petsitting_save_business_hours', array($this, 'save_business_hours'));
     }
     
     /**
      * Render unavailabilities page
      */
     public function render_unavailabilities_page() {
+        $tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'single';
         $action = isset($_GET['action']) ? sanitize_text_field($_GET['action']) : 'list';
         $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : 'single';
         $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
+        
+        // Handle tab-based navigation
+        if ($tab === 'business_hours') {
+            $this->render_business_hours_page();
+            return;
+        }
         
         switch ($action) {
             case 'edit':
@@ -48,7 +56,7 @@ class Calendar_Petsitting_Unavailabilities_Admin {
                 }
                 break;
             default:
-                $this->render_list();
+                $this->render_list($tab);
                 break;
         }
     }
@@ -56,7 +64,7 @@ class Calendar_Petsitting_Unavailabilities_Admin {
     /**
      * Render unavailabilities list
      */
-    private function render_list() {
+    private function render_list($tab = 'single') {
         global $wpdb;
         
         $table_unavailabilities = Calendar_Petsitting_Database::get_table_name('unavailabilities');
@@ -76,26 +84,40 @@ class Calendar_Petsitting_Unavailabilities_Admin {
         
         ?>
         <div class="wrap">
-            <h1>
-                <?php _e('Indisponibilités', 'calendar-petsitting'); ?>
-                <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&action=add&type=single'); ?>" class="page-title-action">
-                    <?php _e('Ajouter une indisponibilité', 'calendar-petsitting'); ?>
-                </a>
-                <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&action=add&type=recurring'); ?>" class="page-title-action">
-                    <?php _e('Ajouter une récurrence', 'calendar-petsitting'); ?>
-                </a>
-            </h1>
+            <h1><?php _e('Indisponibilités', 'calendar-petsitting'); ?></h1>
             
             <?php $this->show_admin_notices(); ?>
             
+            <!-- Tab navigation -->
+            <h2 class="nav-tab-wrapper">
+                <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&tab=single'); ?>" 
+                   class="nav-tab <?php echo ($tab === 'single') ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('Ponctuelles', 'calendar-petsitting'); ?>
+                </a>
+                <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&tab=recurring'); ?>" 
+                   class="nav-tab <?php echo ($tab === 'recurring') ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('Récurrentes', 'calendar-petsitting'); ?>
+                </a>
+                <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&tab=business_hours'); ?>" 
+                   class="nav-tab <?php echo ($tab === 'business_hours') ? 'nav-tab-active' : ''; ?>">
+                    <?php _e('Horaires de travail', 'calendar-petsitting'); ?>
+                </a>
+            </h2>
+            
             <div id="poststuff">
-                <div id="post-body" class="metabox-holder columns-2">
+                <div id="post-body" class="metabox-holder columns-1">
                     <div id="post-body-content">
                         
+                        <?php if ($tab === 'single' || $tab === ''): ?>
                         <!-- Single Unavailabilities -->
                         <div class="postbox">
                             <div class="postbox-header">
-                                <h2 class="hndle"><?php _e('Indisponibilités ponctuelles', 'calendar-petsitting'); ?></h2>
+                                <h2 class="hndle">
+                                    <?php _e('Indisponibilités ponctuelles', 'calendar-petsitting'); ?>
+                                    <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&action=add&type=single'); ?>" class="page-title-action">
+                                        <?php _e('Ajouter', 'calendar-petsitting'); ?>
+                                    </a>
+                                </h2>
                             </div>
                             <div class="inside">
                                 <table class="wp-list-table widefat fixed striped">
@@ -135,11 +157,18 @@ class Calendar_Petsitting_Unavailabilities_Admin {
                                 </table>
                             </div>
                         </div>
+                        <?php endif; ?>
                         
+                        <?php if ($tab === 'recurring'): ?>
                         <!-- Recurring Unavailabilities -->
                         <div class="postbox">
                             <div class="postbox-header">
-                                <h2 class="hndle"><?php _e('Indisponibilités récurrentes', 'calendar-petsitting'); ?></h2>
+                                <h2 class="hndle">
+                                    <?php _e('Indisponibilités récurrentes', 'calendar-petsitting'); ?>
+                                    <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&action=add&type=recurring'); ?>" class="page-title-action">
+                                        <?php _e('Ajouter', 'calendar-petsitting'); ?>
+                                    </a>
+                                </h2>
                             </div>
                             <div class="inside">
                                 <table class="wp-list-table widefat fixed striped">
@@ -190,6 +219,7 @@ class Calendar_Petsitting_Unavailabilities_Admin {
                                 </table>
                             </div>
                         </div>
+                        <?php endif; ?>
                         
                     </div>
                 </div>
@@ -667,5 +697,147 @@ class Calendar_Petsitting_Unavailabilities_Admin {
         );
         
         return isset($weekdays[$weekday]) ? $weekdays[$weekday] : $weekday;
+    }
+    
+    /**
+     * Render business hours page
+     */
+    private function render_business_hours_page() {
+        $business_hours = get_option('calendar_petsitting_business_hours', array());
+        
+        // Default business hours if none exist
+        $default_hours = array(
+            1 => array('open_time' => '09:00', 'close_time' => '18:00', 'closed' => false), // Monday
+            2 => array('open_time' => '09:00', 'close_time' => '18:00', 'closed' => false), // Tuesday
+            3 => array('open_time' => '09:00', 'close_time' => '18:00', 'closed' => false), // Wednesday
+            4 => array('open_time' => '09:00', 'close_time' => '18:00', 'closed' => false), // Thursday
+            5 => array('open_time' => '09:00', 'close_time' => '18:00', 'closed' => false), // Friday
+            6 => array('open_time' => '09:00', 'close_time' => '18:00', 'closed' => true),  // Saturday
+            0 => array('open_time' => '09:00', 'close_time' => '18:00', 'closed' => true),  // Sunday
+        );
+        
+        $business_hours = array_merge($default_hours, $business_hours);
+        
+        ?>
+        <div class="wrap">
+            <h1><?php _e('Indisponibilités', 'calendar-petsitting'); ?></h1>
+            
+            <?php $this->show_admin_notices(); ?>
+            
+            <!-- Tab navigation -->
+            <h2 class="nav-tab-wrapper">
+                <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&tab=single'); ?>" 
+                   class="nav-tab">
+                    <?php _e('Ponctuelles', 'calendar-petsitting'); ?>
+                </a>
+                <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&tab=recurring'); ?>" 
+                   class="nav-tab">
+                    <?php _e('Récurrentes', 'calendar-petsitting'); ?>
+                </a>
+                <a href="<?php echo admin_url('admin.php?page=calendar-petsitting-unavailabilities&tab=business_hours'); ?>" 
+                   class="nav-tab nav-tab-active">
+                    <?php _e('Horaires de travail', 'calendar-petsitting'); ?>
+                </a>
+            </h2>
+            
+            <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                <input type="hidden" name="action" value="petsitting_save_business_hours">
+                <?php wp_nonce_field('save_business_hours', 'petsitting_nonce'); ?>
+                
+                <div class="postbox">
+                    <div class="postbox-header">
+                        <h2 class="hndle"><?php _e('Horaires de travail par défaut', 'calendar-petsitting'); ?></h2>
+                    </div>
+                    <div class="inside">
+                        <p><?php _e('Définissez vos horaires de travail par défaut. En dehors de ces créneaux, les réservations seront automatiquement bloquées.', 'calendar-petsitting'); ?></p>
+                        
+                        <table class="form-table">
+                            <?php 
+                            $weekdays_order = array(1, 2, 3, 4, 5, 6, 0); // Monday to Sunday
+                            foreach ($weekdays_order as $weekday): 
+                                $day_hours = isset($business_hours[$weekday]) ? $business_hours[$weekday] : $default_hours[$weekday];
+                            ?>
+                            <tr>
+                                <th scope="row">
+                                    <label><?php echo esc_html($this->get_weekday_name($weekday)); ?></label>
+                                </th>
+                                <td>
+                                    <label>
+                                        <input type="checkbox" name="business_hours[<?php echo $weekday; ?>][closed]" value="1" 
+                                               <?php checked($day_hours['closed']); ?> 
+                                               onchange="toggleDayHours(<?php echo $weekday; ?>, this.checked)">
+                                        <?php _e('Fermé', 'calendar-petsitting'); ?>
+                                    </label>
+                                    
+                                    <div class="day-hours" id="day-hours-<?php echo $weekday; ?>" 
+                                         style="<?php echo $day_hours['closed'] ? 'display: none;' : ''; ?>">
+                                        <label>
+                                            <?php _e('De', 'calendar-petsitting'); ?>
+                                            <input type="time" name="business_hours[<?php echo $weekday; ?>][open_time]" 
+                                                   value="<?php echo esc_attr($day_hours['open_time']); ?>">
+                                        </label>
+                                        <label>
+                                            <?php _e('à', 'calendar-petsitting'); ?>
+                                            <input type="time" name="business_hours[<?php echo $weekday; ?>][close_time]" 
+                                                   value="<?php echo esc_attr($day_hours['close_time']); ?>">
+                                        </label>
+                                    </div>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </table>
+                        
+                        <script>
+                        function toggleDayHours(weekday, isClosed) {
+                            const hoursDiv = document.getElementById('day-hours-' + weekday);
+                            if (isClosed) {
+                                hoursDiv.style.display = 'none';
+                            } else {
+                                hoursDiv.style.display = 'block';
+                            }
+                        }
+                        </script>
+                    </div>
+                </div>
+                
+                <?php submit_button(__('Enregistrer les horaires', 'calendar-petsitting')); ?>
+            </form>
+        </div>
+        <?php
+    }
+    
+    /**
+     * Save business hours
+     */
+    public function save_business_hours() {
+        // Verify nonce
+        if (!wp_verify_nonce($_POST['petsitting_nonce'], 'save_business_hours')) {
+            wp_die(__('Erreur de sécurité', 'calendar-petsitting'));
+        }
+        
+        // Check permissions
+        if (!current_user_can('manage_options')) {
+            wp_die(__('Permissions insuffisantes', 'calendar-petsitting'));
+        }
+        
+        $business_hours = array();
+        
+        if (isset($_POST['business_hours']) && is_array($_POST['business_hours'])) {
+            foreach ($_POST['business_hours'] as $weekday => $hours) {
+                $weekday = intval($weekday);
+                if ($weekday >= 0 && $weekday <= 6) {
+                    $business_hours[$weekday] = array(
+                        'closed' => isset($hours['closed']),
+                        'open_time' => isset($hours['open_time']) ? sanitize_text_field($hours['open_time']) : '09:00',
+                        'close_time' => isset($hours['close_time']) ? sanitize_text_field($hours['close_time']) : '18:00'
+                    );
+                }
+            }
+        }
+        
+        update_option('calendar_petsitting_business_hours', $business_hours);
+        
+        wp_redirect(admin_url('admin.php?page=calendar-petsitting-unavailabilities&tab=business_hours&updated=1'));
+        exit;
     }
 }

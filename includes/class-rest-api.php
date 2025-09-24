@@ -428,7 +428,7 @@ class Calendar_Petsitting_REST_API {
         $bookings = $wpdb->get_results($wpdb->prepare(
             "SELECT 
                 b.id,
-                b.total_cents,
+                b.total_price_cents,
                 b.status,
                 b.created_at,
                 c.first_name,

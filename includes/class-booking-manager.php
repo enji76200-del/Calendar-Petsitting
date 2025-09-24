@@ -142,55 +142,15 @@ class Calendar_Petsitting_Booking_Manager {
      * Check availability for all occurrences
      */
     private function check_availability($service_id, $occurrences) {
-        global $wpdb;
-        
-        $table_booking_items = Calendar_Petsitting_Database::get_table_name('booking_items');
-        $table_bookings = Calendar_Petsitting_Database::get_table_name('bookings');
-        $table_unavailabilities = Calendar_Petsitting_Database::get_table_name('unavailabilities');
+        $calculator = new Calendar_Petsitting_Availability_Calculator();
         
         foreach ($occurrences as $occurrence) {
             $start = $occurrence['start_datetime'];
             $end = $occurrence['end_datetime'];
             
-            // Check for existing bookings overlap
-            $existing_bookings = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) 
-                 FROM $table_booking_items bi
-                 JOIN $table_bookings b ON bi.booking_id = b.id
-                 WHERE b.status = 'confirmed'
-                 AND (
-                     (bi.start_datetime < %s AND bi.end_datetime > %s) OR
-                     (bi.start_datetime < %s AND bi.end_datetime > %s) OR
-                     (bi.start_datetime >= %s AND bi.end_datetime <= %s)
-                 )",
-                $end, $start,
-                $end, $end,
-                $start, $end
-            ));
-            
-            if ($existing_bookings > 0) {
-                throw new Exception(__('Ce créneau est déjà réservé', 'calendar-petsitting'));
-            }
-            
-            // Check for unavailabilities overlap
-            $unavailabilities = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) 
-                 FROM $table_unavailabilities
-                 WHERE (
-                     (start_datetime < %s AND end_datetime > %s) OR
-                     (start_datetime < %s AND end_datetime > %s) OR
-                     (start_datetime >= %s AND end_datetime <= %s)
-                 )",
-                $end, $start,
-                $end, $end,
-                $start, $end
-            ));
-            
-            if ($unavailabilities > 0) {
+            if (!$calculator->is_slot_available($start, $end, $service_id)) {
                 throw new Exception(__('Ce créneau n\'est pas disponible', 'calendar-petsitting'));
             }
-            
-            // TODO: Check recurring unavailabilities
         }
     }
     
