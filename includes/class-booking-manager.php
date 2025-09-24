@@ -91,6 +91,12 @@ class Calendar_Petsitting_Booking_Manager {
             throw new Exception(__('Adresse email invalide', 'calendar-petsitting'));
         }
         
+        // Validate phone (basic check)
+        $phone = preg_replace('/[^0-9+\-\s\(\)]/', '', $customer_data['phone']);
+        if (strlen($phone) < 8) {
+            throw new Exception(__('Numéro de téléphone invalide', 'calendar-petsitting'));
+        }
+        
         // Validate service ID
         if (!is_numeric($service_id) || $service_id <= 0) {
             throw new Exception(__('ID de service invalide', 'calendar-petsitting'));
@@ -101,20 +107,33 @@ class Calendar_Petsitting_Booking_Manager {
             throw new Exception(__('Au moins une occurrence est requise', 'calendar-petsitting'));
         }
         
-        foreach ($occurrences as $occurrence) {
+        $timezone = get_option('calendar_petsitting_timezone', 'Europe/Paris');
+        $now = new DateTime('now', new DateTimeZone($timezone));
+        
+        foreach ($occurrences as $index => $occurrence) {
             if (empty($occurrence['start_datetime']) || empty($occurrence['end_datetime'])) {
-                throw new Exception(__('Dates de début et fin requises pour chaque occurrence', 'calendar-petsitting'));
+                throw new Exception(sprintf(__('Dates de début et fin requises pour l\'occurrence %d', 'calendar-petsitting'), $index + 1));
             }
             
-            $start = new DateTime($occurrence['start_datetime']);
-            $end = new DateTime($occurrence['end_datetime']);
+            try {
+                $start = new DateTime($occurrence['start_datetime'], new DateTimeZone($timezone));
+                $end = new DateTime($occurrence['end_datetime'], new DateTimeZone($timezone));
+            } catch (Exception $e) {
+                throw new Exception(sprintf(__('Format de date invalide pour l\'occurrence %d', 'calendar-petsitting'), $index + 1));
+            }
             
             if ($start >= $end) {
-                throw new Exception(__('La date de fin doit être postérieure à la date de début', 'calendar-petsitting'));
+                throw new Exception(sprintf(__('La date de fin doit être postérieure à la date de début pour l\'occurrence %d', 'calendar-petsitting'), $index + 1));
             }
             
-            if ($start < new DateTime()) {
-                throw new Exception(__('Les réservations dans le passé ne sont pas autorisées', 'calendar-petsitting'));
+            if ($start < $now) {
+                throw new Exception(sprintf(__('Les réservations dans le passé ne sont pas autorisées (occurrence %d)', 'calendar-petsitting'), $index + 1));
+            }
+            
+            // Check if the duration is reasonable (not more than 7 days)
+            $duration_days = $end->diff($start)->days;
+            if ($duration_days > 7) {
+                throw new Exception(sprintf(__('La durée de l\'occurrence %d ne peut pas dépasser 7 jours', 'calendar-petsitting'), $index + 1));
             }
         }
     }

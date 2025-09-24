@@ -37,6 +37,25 @@
     100% { transform: rotate(360deg); }
 }
 
+/* Error Messages */
+.petsitting-error-message {
+    background-color: #ffeaa7;
+    border: 1px solid #fdcb6e;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #2d3436;
+    display: none;
+}
+
+.petsitting-error-message p {
+    margin: 0;
+}
+
+.petsitting-error-message strong {
+    color: #d63031;
+}
+
 /* Modal Styles */
 .petsitting-modal {
     display: none;
@@ -179,6 +198,16 @@
 .petsitting-form-group input:invalid,
 .petsitting-form-group select:invalid {
     border-color: #e74c3c;
+}
+
+.petsitting-form-group.error input,
+.petsitting-form-group.error select,
+.petsitting-form-group.error textarea {
+    border-color: #e74c3c;
+}
+
+.petsitting-form-group.error label {
+    color: #e74c3c;
 }
 
 /* Button Styles */

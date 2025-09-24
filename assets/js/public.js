@@ -31,22 +31,35 @@
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
             buttonText: {
-                today: calendarPetsitting.strings.today || 'Aujourd\'hui',
+                today: 'Aujourd\'hui',
                 month: 'Mois',
                 week: 'Semaine',
                 day: 'Jour'
+            },
+            loading: function(isLoading) {
+                if (isLoading) {
+                    showLoading();
+                } else {
+                    hideLoading();
+                }
             },
             eventSources: [
                 {
                     url: calendarPetsitting.restUrl + 'availability',
                     method: 'GET',
                     extraParams: function() {
-                        return {
-                            service_id: serviceId
-                        };
+                        const params = {};
+                        if (serviceId) {
+                            params.service_id = serviceId;
+                        }
+                        return params;
+                    },
+                    success: function(data) {
+                        hideLoading();
                     },
                     failure: function() {
-                        alert(calendarPetsitting.strings.error);
+                        hideLoading();
+                        showError(calendarPetsitting.strings.error);
                     }
                 }
             ],
@@ -64,6 +77,7 @@
                 // Make available dates clickable
                 if (isDateAvailable(info.date)) {
                     info.el.classList.add('petsitting-available-slot');
+                    info.el.title = 'Cliquez pour réserver ce créneau';
                 }
             }
         });
@@ -73,6 +87,39 @@
         // Initialize modal handlers
         initModalHandlers();
     };
+    
+    /**
+     * Show loading indicator
+     */
+    function showLoading() {
+        $('.petsitting-loading').show();
+    }
+    
+    /**
+     * Hide loading indicator
+     */
+    function hideLoading() {
+        $('.petsitting-loading').hide();
+    }
+    
+    /**
+     * Show error message
+     */
+    function showError(message) {
+        // Create or update error message
+        let errorEl = $('.petsitting-error-message');
+        if (errorEl.length === 0) {
+            errorEl = $('<div class="petsitting-error-message"></div>');
+            $('.petsitting-calendar-container').prepend(errorEl);
+        }
+        
+        errorEl.html('<p><strong>Erreur:</strong> ' + message + '</p>').show();
+        
+        // Auto-hide after 5 seconds
+        setTimeout(function() {
+            errorEl.fadeOut();
+        }, 5000);
+    }
     
     /**
      * Handle date click

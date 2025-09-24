@@ -1,0 +1,182 @@
+# French (France) language file for Calendar Pet Sitting
+# Copyright (C) 2024 Calendar Pet Sitting
+# This file is distributed under the same license as the Calendar Pet Sitting package.
+msgid ""
+msgstr ""
+"Project-Id-Version: Calendar Pet Sitting 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/enji76200-del/Calendar-Petsitting\n"
+"POT-Creation-Date: 2024-01-01 12:00+0000\n"
+"PO-Revision-Date: 2024-01-01 12:00+0000\n"
+"Last-Translator: Calendar Pet Sitting <contact@example.com>\n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: calendar-petsitting.php
+msgid "Un plugin WordPress complet pour la gestion de réservations de services de pet-sitting avec calendrier interactif intégrable dans Divi."
+msgstr "Un plugin WordPress complet pour la gestion de réservations de services de pet-sitting avec calendrier interactif intégrable dans Divi."
+
+#: includes/class-database.php
+msgid "Garde journalière"
+msgstr "Garde journalière"
+
+msgid "Service de garde d'animaux pour une journée complète"
+msgstr "Service de garde d'animaux pour une journée complète"
+
+msgid "Promenade (1h)"
+msgstr "Promenade (1h)"
+
+msgid "Promenade d'une heure pour votre animal"
+msgstr "Promenade d'une heure pour votre animal"
+
+msgid "Visite express (30min)"
+msgstr "Visite express (30min)"
+
+msgid "Visite rapide pour nourrir et câliner votre animal"
+msgstr "Visite rapide pour nourrir et câliner votre animal"
+
+#: public/class-shortcode.php
+msgid "Chargement du calendrier..."
+msgstr "Chargement du calendrier..."
+
+msgid "Nouvelle réservation"
+msgstr "Nouvelle réservation"
+
+msgid "Vos informations"
+msgstr "Vos informations"
+
+msgid "Prénom *"
+msgstr "Prénom *"
+
+msgid "Nom *"
+msgstr "Nom *"
+
+msgid "Email *"
+msgstr "Email *"
+
+msgid "Téléphone *"
+msgstr "Téléphone *"
+
+msgid "Service souhaité"
+msgstr "Service souhaité"
+
+msgid "Type de service *"
+msgstr "Type de service *"
+
+msgid "Sélectionnez un service"
+msgstr "Sélectionnez un service"
+
+msgid "Créneaux sélectionnés"
+msgstr "Créneaux sélectionnés"
+
+msgid "Ajouter un créneau"
+msgstr "Ajouter un créneau"
+
+msgid "Remarques (optionnel)"
+msgstr "Remarques (optionnel)"
+
+msgid "Informations supplémentaires concernant votre demande..."
+msgstr "Informations supplémentaires concernant votre demande..."
+
+msgid "Total:"
+msgstr "Total:"
+
+msgid "Annuler"
+msgstr "Annuler"
+
+msgid "Confirmer la réservation"
+msgstr "Confirmer la réservation"
+
+msgid "Réservation confirmée !"
+msgstr "Réservation confirmée !"
+
+msgid "Votre réservation a été enregistrée avec succès."
+msgstr "Votre réservation a été enregistrée avec succès."
+
+msgid "Nous vous contacterons prochainement pour confirmer les détails."
+msgstr "Nous vous contacterons prochainement pour confirmer les détails."
+
+msgid "Fermer"
+msgstr "Fermer"
+
+#: admin/class-admin.php
+msgid "Pet Sitting Calendar"
+msgstr "Calendrier Pet Sitting"
+
+msgid "Pet Sitting"
+msgstr "Pet Sitting"
+
+msgid "Services"
+msgstr "Services"
+
+msgid "Réservations"
+msgstr "Réservations"
+
+msgid "Indisponibilités"
+msgstr "Indisponibilités"
+
+msgid "Paramètres"
+msgstr "Paramètres"
+
+msgid "Gérez vos types de services et leurs tarifs"
+msgstr "Gérez vos types de services et leurs tarifs"
+
+msgid "Gérer les services"
+msgstr "Gérer les services"
+
+msgid "Consultez et gérez toutes les réservations"
+msgstr "Consultez et gérez toutes les réservations"
+
+msgid "Voir les réservations"
+msgstr "Voir les réservations"
+
+msgid "Définissez vos périodes d'indisponibilité"
+msgstr "Définissez vos périodes d'indisponibilité"
+
+msgid "Gérer les indisponibilités"
+msgstr "Gérer les indisponibilités"
+
+msgid "Configurez les options du plugin"
+msgstr "Configurez les options du plugin"
+
+msgid "Statistiques rapides"
+msgstr "Statistiques rapides"
+
+msgid "Services actifs"
+msgstr "Services actifs"
+
+msgid "Clients"
+msgstr "Clients"
+
+msgid "Utilisation du shortcode"
+msgstr "Utilisation du shortcode"
+
+msgid "Pour afficher le calendrier sur votre site, utilisez le shortcode suivant:"
+msgstr "Pour afficher le calendrier sur votre site, utilisez le shortcode suivant:"
+
+msgid "Options disponibles:"
+msgstr "Options disponibles:"
+
+msgid "Exemple:"
+msgstr "Exemple:"
+
+msgid "Fuseau horaire"
+msgstr "Fuseau horaire"
+
+msgid "Durée de conservation (années)"
+msgstr "Durée de conservation (années)"
+
+msgid "Les réservations seront automatiquement supprimées après cette période"
+msgstr "Les réservations seront automatiquement supprimées après cette période"
+
+msgid "Pas par défaut (minutes)"
+msgstr "Pas par défaut (minutes)"
+
+msgid "Pas de temps par défaut pour les services horaires/minute"
+msgstr "Pas de temps par défaut pour les services horaires/minute"
+
+msgid "Paramètres sauvegardés."
+msgstr "Paramètres sauvegardés."

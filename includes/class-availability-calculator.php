@@ -312,7 +312,16 @@ class Calendar_Petsitting_Availability_Calculator {
      * Format datetime for FullCalendar
      */
     private function format_datetime_for_fullcalendar($datetime) {
-        $dt = new DateTime($datetime);
+        $timezone = get_option('calendar_petsitting_timezone', 'Europe/Paris');
+        
+        // Create DateTime object with proper timezone
+        if (is_string($datetime)) {
+            $dt = new DateTime($datetime, new DateTimeZone($timezone));
+        } else {
+            $dt = $datetime;
+            $dt->setTimezone(new DateTimeZone($timezone));
+        }
+        
         return $dt->format('c'); // ISO 8601 format
     }
     

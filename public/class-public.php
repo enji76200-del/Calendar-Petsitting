@@ -21,6 +21,10 @@ class Calendar_Petsitting_Public {
         add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
         add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
         add_action('wp_head', array($this, 'add_ajax_url'));
+        
+        // AJAX handlers
+        add_action('wp_ajax_petsitting_get_availability', array($this, 'ajax_get_availability'));
+        add_action('wp_ajax_nopriv_petsitting_get_availability', array($this, 'ajax_get_availability'));
     }
     
     /**
@@ -103,5 +107,27 @@ class Calendar_Petsitting_Public {
      */
     public function add_ajax_url() {
         echo '<script type="text/javascript">var ajaxurl = "' . admin_url('admin-ajax.php') . '";</script>';
+    }
+    
+    /**
+     * AJAX handler for getting availability
+     */
+    public function ajax_get_availability() {
+        check_ajax_referer('calendar_petsitting_nonce');
+        
+        try {
+            $calculator = new Calendar_Petsitting_Availability_Calculator();
+            
+            $from = sanitize_text_field($_POST['from']);
+            $to = sanitize_text_field($_POST['to']);
+            $service_id = isset($_POST['service_id']) ? intval($_POST['service_id']) : null;
+            
+            $availability = $calculator->get_availability($from, $to, $service_id);
+            
+            wp_send_json_success($availability);
+            
+        } catch (Exception $e) {
+            wp_send_json_error($e->getMessage());
+        }
     }
 }

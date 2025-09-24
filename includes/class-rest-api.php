@@ -165,19 +165,22 @@ class Calendar_Petsitting_REST_API {
      * Get availability data
      */
     public function get_availability($request) {
-        $calculator = new Calendar_Petsitting_Availability_Calculator();
-        
-        $from = $request->get_param('from');
-        $to = $request->get_param('to');
-        $service_id = $request->get_param('service_id');
-        
         try {
+            $calculator = new Calendar_Petsitting_Availability_Calculator();
+            
+            $from = $request->get_param('from');
+            $to = $request->get_param('to');
+            $service_id = $request->get_param('service_id');
+            
+            // Validate date parameters
+            if (!$from || !$to) {
+                return new WP_Error('invalid_dates', __('Paramètres de date requis', 'calendar-petsitting'), array('status' => 400));
+            }
+            
             $availability = $calculator->get_availability($from, $to, $service_id);
             
-            return rest_ensure_response(array(
-                'success' => true,
-                'data' => $availability
-            ));
+            return rest_ensure_response($availability);
+            
         } catch (Exception $e) {
             return new WP_Error('availability_error', $e->getMessage(), array('status' => 400));
         }
@@ -199,10 +202,7 @@ class Calendar_Petsitting_REST_API {
             1
         ));
         
-        return rest_ensure_response(array(
-            'success' => true,
-            'data' => $services
-        ));
+        return rest_ensure_response($services);
     }
     
     /**
