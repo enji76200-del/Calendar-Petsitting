@@ -35,6 +35,14 @@ class Calendar_Petsitting_Shortcode {
             'theme' => 'default'
         ), $atts, 'petsitting_calendar');
         
+        // Map simple view names to FullCalendar view names
+        $view_mapping = array(
+            'month' => 'dayGridMonth',
+            'week' => 'timeGridWeek',
+            'day' => 'timeGridDay'
+        );
+        $fullcalendar_view = isset($view_mapping[$atts['view']]) ? $view_mapping[$atts['view']] : 'dayGridMonth';
+        
         // Generate unique ID for this calendar instance
         $calendar_id = 'petsitting-calendar-' . uniqid();
         
@@ -46,7 +54,7 @@ class Calendar_Petsitting_Shortcode {
         <div class="petsitting-calendar-container" data-theme="<?php echo esc_attr($atts['theme']); ?>">
             <div id="<?php echo esc_attr($calendar_id); ?>" 
                  class="petsitting-calendar" 
-                 data-view="<?php echo esc_attr($atts['view']); ?>"
+                 data-view="<?php echo esc_attr($fullcalendar_view); ?>"
                  data-height="<?php echo esc_attr($atts['height']); ?>"
                  data-service-id="<?php echo esc_attr($atts['service_id']); ?>">
             </div>
@@ -99,22 +107,29 @@ class Calendar_Petsitting_Shortcode {
                         <div class="petsitting-form-section">
                             <h4><?php _e('Service souhaité', 'calendar-petsitting'); ?></h4>
                             
-                            <div class="petsitting-form-group">
-                                <label for="service_id"><?php _e('Type de service *', 'calendar-petsitting'); ?></label>
-                                <select id="service_id" name="service_id" required>
-                                    <option value=""><?php _e('Sélectionnez un service', 'calendar-petsitting'); ?></option>
-                                    <?php foreach ($services as $service): ?>
-                                        <option value="<?php echo esc_attr($service->id); ?>" 
-                                                data-type="<?php echo esc_attr($service->type); ?>"
-                                                data-price="<?php echo esc_attr($service->price_cents); ?>"
-                                                data-min-duration="<?php echo esc_attr($service->min_duration); ?>"
-                                                data-step-minutes="<?php echo esc_attr($service->step_minutes); ?>">
-                                            <?php echo esc_html($service->name); ?> 
-                                            (<?php echo $this->format_price($service->price_cents); ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
+                            <?php if (empty($services)): ?>
+                                <div class="petsitting-no-services-message">
+                                    <p><strong><?php _e('Aucun service actif disponible', 'calendar-petsitting'); ?></strong></p>
+                                    <p><?php _e('Nous n\'avons actuellement aucun service disponible à la réservation. Veuillez nous contacter directement pour plus d\'informations.', 'calendar-petsitting'); ?></p>
+                                </div>
+                            <?php else: ?>
+                                <div class="petsitting-form-group">
+                                    <label for="service_id"><?php _e('Type de service *', 'calendar-petsitting'); ?></label>
+                                    <select id="service_id" name="service_id" required>
+                                        <option value=""><?php _e('Sélectionnez un service', 'calendar-petsitting'); ?></option>
+                                        <?php foreach ($services as $service): ?>
+                                            <option value="<?php echo esc_attr($service->id); ?>" 
+                                                    data-type="<?php echo esc_attr($service->type); ?>"
+                                                    data-price="<?php echo esc_attr($service->price_cents); ?>"
+                                                    data-min-duration="<?php echo esc_attr($service->min_duration); ?>"
+                                                    data-step-minutes="<?php echo esc_attr($service->step_minutes); ?>">
+                                                <?php echo esc_html($service->name); ?> 
+                                                (<?php echo $this->format_price($service->price_cents); ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            <?php endif; ?>
                         </div>
                         
                         <div class="petsitting-form-section">
@@ -150,7 +165,8 @@ class Calendar_Petsitting_Shortcode {
                     <button type="button" class="petsitting-btn petsitting-btn-secondary" id="cancel-booking">
                         <?php _e('Annuler', 'calendar-petsitting'); ?>
                     </button>
-                    <button type="button" class="petsitting-btn petsitting-btn-primary" id="confirm-booking">
+                    <button type="button" class="petsitting-btn petsitting-btn-primary" id="confirm-booking"
+                            <?php echo empty($services) ? 'disabled' : ''; ?>>
                         <?php _e('Confirmer la réservation', 'calendar-petsitting'); ?>
                     </button>
                 </div>

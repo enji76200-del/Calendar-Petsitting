@@ -93,13 +93,27 @@ class Calendar_Petsitting_Public {
      * Enqueue public styles
      */
     public function enqueue_styles() {
+        // FullCalendar CSS
+        wp_enqueue_style(
+            'fullcalendar',
+            'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css',
+            array(),
+            '6.1.10'
+        );
+        
         // Plugin main stylesheet
         wp_enqueue_style(
             'calendar-petsitting-public',
             CALENDAR_PETSITTING_PLUGIN_URL . 'assets/css/public.css',
-            array(),
+            array('fullcalendar'),
             CALENDAR_PETSITTING_VERSION
         );
+
+        // Inject custom CSS option if provided
+        $custom_css = get_option('calendar_petsitting_custom_css', '');
+        if (!empty($custom_css)) {
+            wp_add_inline_style('calendar-petsitting-public', $custom_css);
+        }
     }
     
     /**

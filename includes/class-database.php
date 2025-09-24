@@ -24,18 +24,47 @@ class Calendar_Petsitting_Database {
      */
     public function __construct() {
         add_action('init', array($this, 'check_database_version'));
+        // Also check immediately on construction to handle first-load timing
+        // and environments where the DB version option exists but tables are missing.
+        $this->check_database_version();
     }
     
     /**
      * Check database version and update if needed
      */
     public function check_database_version() {
+        global $wpdb;
         $installed_version = get_option('calendar_petsitting_db_version');
-        
-        if ($installed_version !== self::DB_VERSION) {
+
+        $needs_install = ($installed_version !== self::DB_VERSION) || !$this->tables_exist();
+
+        if ($needs_install) {
             $this->create_tables();
             update_option('calendar_petsitting_db_version', self::DB_VERSION);
         }
+    }
+
+    /**
+     * Check if required tables exist in the current database
+     */
+    private function tables_exist() {
+        global $wpdb;
+        $tables = array(
+            self::get_table_name('services'),
+            self::get_table_name('customers'),
+            self::get_table_name('bookings'),
+            self::get_table_name('booking_items'),
+            self::get_table_name('unavailabilities'),
+            self::get_table_name('recurring_unavailabilities')
+        );
+
+        foreach ($tables as $table) {
+            $exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table));
+            if ($exists !== $table) {
+                return false;
+            }
+        }
+        return true;
     }
     
     /**
