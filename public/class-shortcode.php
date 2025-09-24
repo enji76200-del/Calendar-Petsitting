@@ -35,6 +35,14 @@ class Calendar_Petsitting_Shortcode {
             'theme' => 'default'
         ), $atts, 'petsitting_calendar');
         
+        // Map simple view names to FullCalendar view names
+        $view_mapping = array(
+            'month' => 'dayGridMonth',
+            'week' => 'timeGridWeek',
+            'day' => 'timeGridDay'
+        );
+        $fullcalendar_view = isset($view_mapping[$atts['view']]) ? $view_mapping[$atts['view']] : 'dayGridMonth';
+        
         // Generate unique ID for this calendar instance
         $calendar_id = 'petsitting-calendar-' . uniqid();
         
@@ -46,7 +54,7 @@ class Calendar_Petsitting_Shortcode {
         <div class="petsitting-calendar-container" data-theme="<?php echo esc_attr($atts['theme']); ?>">
             <div id="<?php echo esc_attr($calendar_id); ?>" 
                  class="petsitting-calendar" 
-                 data-view="<?php echo esc_attr($atts['view']); ?>"
+                 data-view="<?php echo esc_attr($fullcalendar_view); ?>"
                  data-height="<?php echo esc_attr($atts['height']); ?>"
                  data-service-id="<?php echo esc_attr($atts['service_id']); ?>">
             </div>

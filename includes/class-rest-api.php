@@ -168,8 +168,9 @@ class Calendar_Petsitting_REST_API {
         try {
             $calculator = new Calendar_Petsitting_Availability_Calculator();
             
-            $from = $request->get_param('from');
-            $to = $request->get_param('to');
+            // Accept both from/to and start/end parameters (FullCalendar compatibility)
+            $from = $request->get_param('from') ?: $request->get_param('start');
+            $to = $request->get_param('to') ?: $request->get_param('end');
             $service_id = $request->get_param('service_id');
             
             // Validate date parameters

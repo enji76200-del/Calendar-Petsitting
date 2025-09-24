@@ -47,8 +47,11 @@
                 {
                     url: calendarPetsitting.restUrl + 'availability',
                     method: 'GET',
-                    extraParams: function() {
-                        const params = {};
+                    extraParams: function(fetchInfo) {
+                        const params = {
+                            from: fetchInfo.startStr,
+                            to: fetchInfo.endStr
+                        };
                         if (serviceId) {
                             params.service_id = serviceId;
                         }
@@ -448,6 +451,11 @@
                 if (response.success) {
                     $('#petsitting-booking-modal').hide();
                     $('#petsitting-success-modal').show();
+                    
+                    // Refresh calendar to show newly booked slots
+                    if (calendar) {
+                        calendar.refetchEvents();
+                    }
                 } else {
                     alert(response.message || calendarPetsitting.strings.error);
                 }
