@@ -152,6 +152,8 @@ class Calendar_Petsitting {
         require_once CALENDAR_PETSITTING_PLUGIN_DIR . 'includes/class-database.php';
         $database = new Calendar_Petsitting_Database();
         $database->create_tables();
+        // Double-check creation in case of race conditions
+        $database->check_database_version();
         
         // Schedule cleanup cron
         if (!wp_next_scheduled('calendar_petsitting_cleanup')) {
