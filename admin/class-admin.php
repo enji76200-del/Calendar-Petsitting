@@ -85,6 +85,28 @@ class Calendar_Petsitting_Admin {
             'calendar-petsitting-settings',
             array($this, 'settings_page')
         );
+
+        add_submenu_page(
+            'calendar-petsitting',
+            __('Aperçu calendrier', 'calendar-petsitting'),
+            __('Aperçu calendrier', 'calendar-petsitting'),
+            'manage_options',
+            'calendar-petsitting-preview',
+            array($this, 'preview_page')
+        );
+    }
+    /**
+     * Calendar preview page
+     */
+    public function preview_page() {
+        // Enqueue frontend assets
+        wp_enqueue_style('calendar-petsitting-public', CALENDAR_PETSITTING_PLUGIN_URL . 'assets/css/public.css', array(), CALENDAR_PETSITTING_VERSION);
+        wp_enqueue_script('calendar-petsitting-public', CALENDAR_PETSITTING_PLUGIN_URL . 'assets/js/public.js', array('jquery'), CALENDAR_PETSITTING_VERSION, true);
+
+        echo '<div class="wrap"><h1>' . __('Aperçu du calendrier', 'calendar-petsitting') . '</h1>';
+        echo '<div style="max-width:900px;margin:0 auto;">';
+        echo do_shortcode('[petsitting_calendar view="month" height="600"]');
+        echo '</div></div>';
     }
     
     /**
@@ -110,6 +132,82 @@ class Calendar_Petsitting_Admin {
             CALENDAR_PETSITTING_VERSION,
             true
         );
+
+        // If we are on the settings page, also enqueue public assets to render the calendar preview
+        $current_page = isset($_GET['page']) ? sanitize_text_field($_GET['page']) : '';
+        if ($current_page === 'calendar-petsitting-settings') {
+            // FullCalendar CSS/JS
+            wp_enqueue_style(
+                'fullcalendar',
+                'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css',
+                array(),
+                '6.1.10'
+            );
+            wp_enqueue_script(
+                'fullcalendar',
+                'https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js',
+                array(),
+                '6.1.10',
+                true
+            );
+
+            // Public CSS/JS
+            wp_enqueue_style(
+                'calendar-petsitting-public',
+                CALENDAR_PETSITTING_PLUGIN_URL . 'assets/css/public.css',
+                array('fullcalendar'),
+                CALENDAR_PETSITTING_VERSION
+            );
+            wp_enqueue_script(
+                'calendar-petsitting-public',
+                CALENDAR_PETSITTING_PLUGIN_URL . 'assets/js/public.js',
+                array('jquery', 'fullcalendar'),
+                CALENDAR_PETSITTING_VERSION,
+                true
+            );
+
+            // Localize like frontend
+            wp_localize_script('calendar-petsitting-public', 'calendarPetsitting', array(
+                'ajaxUrl' => admin_url('admin-ajax.php'),
+                'restUrl' => rest_url('petsitting/v1/'),
+                'nonce' => wp_create_nonce('calendar_petsitting_nonce'),
+                'timezone' => get_option('calendar_petsitting_timezone', 'Europe/Paris'),
+                'dateFormat' => get_option('calendar_petsitting_date_format', 'd/m/Y'),
+                'timeFormat' => get_option('calendar_petsitting_time_format', 'H:i'),
+                'strings' => array(
+                    'loading' => __('Chargement...', 'calendar-petsitting'),
+                    'error' => __('Une erreur s\'est produite', 'calendar-petsitting'),
+                    'success' => __('Réservation créée avec succès !', 'calendar-petsitting'),
+                    'confirmBooking' => __('Confirmer la réservation', 'calendar-petsitting'),
+                    'cancel' => __('Annuler', 'calendar-petsitting'),
+                    'close' => __('Fermer', 'calendar-petsitting'),
+                    'selectService' => __('Sélectionnez un service', 'calendar-petsitting'),
+                    'addOccurrence' => __('Ajouter une occurrence', 'calendar-petsitting'),
+                    'removeOccurrence' => __('Supprimer', 'calendar-petsitting'),
+                    'firstName' => __('Prénom', 'calendar-petsitting'),
+                    'lastName' => __('Nom', 'calendar-petsitting'),
+                    'email' => __('Email', 'calendar-petsitting'),
+                    'phone' => __('Téléphone', 'calendar-petsitting'),
+                    'service' => __('Service', 'calendar-petsitting'),
+                    'notes' => __('Remarques', 'calendar-petsitting'),
+                    'booking' => __('Réservation', 'calendar-petsitting'),
+                    'occurrences' => __('Créneaux sélectionnés', 'calendar-petsitting'),
+                    'total' => __('Total', 'calendar-petsitting'),
+                    'validation' => array(
+                        'required' => __('Ce champ est requis', 'calendar-petsitting'),
+                        'email' => __('Veuillez saisir une adresse email valide', 'calendar-petsitting'),
+                        'phone' => __('Veuillez saisir un numéro de téléphone valide', 'calendar-petsitting'),
+                        'minOccurrences' => __('Au moins un créneau doit être sélectionné', 'calendar-petsitting')
+                    )
+                )
+            ));
+
+            // Inject custom CSS inline for preview
+            $custom_css = get_option('calendar_petsitting_custom_css', '');
+            if (!empty($custom_css)) {
+                wp_add_inline_style('calendar-petsitting-public', $custom_css);
+            }
+        }
     }
     
     /**
@@ -212,6 +310,7 @@ class Calendar_Petsitting_Admin {
         $timezone = get_option('calendar_petsitting_timezone', 'Europe/Paris');
         $retention_years = get_option('calendar_petsitting_retention_years', 2);
         $default_step_minutes = get_option('calendar_petsitting_default_step_minutes', 30);
+        $custom_css = get_option('calendar_petsitting_custom_css', '');
         ?>
         <div class="wrap">
             <h1><?php _e('Paramètres', 'calendar-petsitting'); ?></h1>
@@ -246,10 +345,25 @@ class Calendar_Petsitting_Admin {
                             <p class="description"><?php _e('Pas de temps par défaut pour les services horaires/minute', 'calendar-petsitting'); ?></p>
                         </td>
                     </tr>
+
+                    <tr>
+                        <th scope="row"><?php _e('CSS personnalisé du calendrier', 'calendar-petsitting'); ?></th>
+                        <td>
+                            <textarea name="custom_css" rows="8" class="large-text code" placeholder="<?php esc_attr_e('Collez ici votre CSS pour personnaliser le calendrier...', 'calendar-petsitting'); ?>"><?php echo esc_textarea($custom_css); ?></textarea>
+                            <p class="description"><?php _e('Ce CSS sera appliqué au rendu du calendrier sur votre site et dans la prévisualisation ci-dessous.', 'calendar-petsitting'); ?></p>
+                        </td>
+                    </tr>
                 </table>
                 
                 <?php submit_button(); ?>
             </form>
+
+            <hr>
+            <h2><?php _e('Prévisualisation du calendrier', 'calendar-petsitting'); ?></h2>
+            <p class="description"><?php _e('Aperçu en direct du shortcode', 'calendar-petsitting'); ?> <code>[petsitting_calendar]</code></p>
+            <div id="calendar-petsitting-admin-preview">
+                <?php echo do_shortcode('[petsitting_calendar]'); ?>
+            </div>
         </div>
         <?php
     }
@@ -265,6 +379,10 @@ class Calendar_Petsitting_Admin {
         update_option('calendar_petsitting_timezone', sanitize_text_field($_POST['timezone']));
         update_option('calendar_petsitting_retention_years', intval($_POST['retention_years']));
         update_option('calendar_petsitting_default_step_minutes', intval($_POST['default_step_minutes']));
+        if (isset($_POST['custom_css'])) {
+            // Store raw CSS; it's injected via wp_add_inline_style
+            update_option('calendar_petsitting_custom_css', wp_unslash($_POST['custom_css']));
+        }
         
         echo '<div class="notice notice-success"><p>' . __('Paramètres sauvegardés.', 'calendar-petsitting') . '</p></div>';
     }

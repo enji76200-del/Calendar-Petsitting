@@ -108,6 +108,12 @@ class Calendar_Petsitting_Public {
             array('fullcalendar'),
             CALENDAR_PETSITTING_VERSION
         );
+
+        // Inject custom CSS option if provided
+        $custom_css = get_option('calendar_petsitting_custom_css', '');
+        if (!empty($custom_css)) {
+            wp_add_inline_style('calendar-petsitting-public', $custom_css);
+        }
     }
     
     /**

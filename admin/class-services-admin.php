@@ -259,7 +259,7 @@ class Calendar_Petsitting_Services_Admin {
      */
     public function save_service() {
         // Verify nonce
-        if (!wp_verify_nonce($_POST['petsitting_nonce'], 'save_service')) {
+        if (!isset($_POST['petsitting_nonce']) || !wp_verify_nonce($_POST['petsitting_nonce'], 'save_service')) {
             wp_die(__('Erreur de sécurité', 'calendar-petsitting'));
         }
         
@@ -274,13 +274,17 @@ class Calendar_Petsitting_Services_Admin {
         $is_edit = ($service_id > 0);
         
         // Sanitize and validate data
+        $type = isset($_POST['type']) ? sanitize_text_field($_POST['type']) : '';
+        $step_minutes_input = isset($_POST['step_minutes']) ? trim($_POST['step_minutes']) : '';
+        $default_step = get_option('calendar_petsitting_default_step_minutes', 30);
+
         $data = array(
-            'name' => sanitize_text_field($_POST['name']),
-            'description' => sanitize_textarea_field($_POST['description']),
-            'type' => sanitize_text_field($_POST['type']),
-            'min_duration' => intval($_POST['min_duration']),
-            'step_minutes' => !empty($_POST['step_minutes']) ? intval($_POST['step_minutes']) : null,
-            'price_cents' => intval(floatval($_POST['price_cents']) * 100), // Convert euros to cents
+            'name' => isset($_POST['name']) ? sanitize_text_field($_POST['name']) : '',
+            'description' => isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '',
+            'type' => $type,
+            'min_duration' => isset($_POST['min_duration']) ? intval($_POST['min_duration']) : 0,
+            'step_minutes' => ($type === 'daily') ? null : (!empty($step_minutes_input) ? intval($step_minutes_input) : intval($default_step)),
+            'price_cents' => isset($_POST['price_cents']) ? intval(round(floatval(str_replace(',', '.', $_POST['price_cents'])) * 100)) : 0,
             'active' => isset($_POST['active']) ? 1 : 0
         );
         
@@ -305,35 +309,46 @@ class Calendar_Petsitting_Services_Admin {
             exit;
         }
         
-        $table_services = Calendar_Petsitting_Database::get_table_name('services');
+    $table_services = Calendar_Petsitting_Database::get_table_name('services');
         
         if ($is_edit) {
             // Update existing service
+            $formats = array('%s', '%s', '%s', '%d', '%d', '%d', '%d');
+            // Si daily, on force NULL en base pour step_minutes en supprimant le format et la valeur
+            if ($data['type'] === 'daily') {
+                $data['step_minutes'] = null;
+            }
             $result = $wpdb->update(
                 $table_services,
                 $data,
                 array('id' => $service_id),
-                array('%s', '%s', '%s', '%d', '%d', '%d', '%d'),
+                $formats,
                 array('%d')
             );
             
             if ($result !== false) {
                 wp_redirect(admin_url('admin.php?page=calendar-petsitting-services&updated=1'));
             } else {
-                wp_redirect(admin_url('admin.php?page=calendar-petsitting-services&action=edit&id=' . $service_id . '&error=update_failed'));
+                $err = !empty($wpdb->last_error) ? '&db_error=' . urlencode($wpdb->last_error) : '';
+                wp_redirect(admin_url('admin.php?page=calendar-petsitting-services&action=edit&id=' . $service_id . '&error=update_failed' . $err));
             }
         } else {
             // Insert new service
+            $formats = array('%s', '%s', '%s', '%d', '%d', '%d', '%d');
+            if ($data['type'] === 'daily') {
+                $data['step_minutes'] = null; // stocké NULL en base
+            }
             $result = $wpdb->insert(
                 $table_services,
                 $data,
-                array('%s', '%s', '%s', '%d', '%d', '%d', '%d')
+                $formats
             );
             
             if ($result) {
                 wp_redirect(admin_url('admin.php?page=calendar-petsitting-services&created=1'));
             } else {
-                wp_redirect(admin_url('admin.php?page=calendar-petsitting-services&action=add&error=create_failed'));
+                $err = !empty($wpdb->last_error) ? '&db_error=' . urlencode($wpdb->last_error) : '';
+                wp_redirect(admin_url('admin.php?page=calendar-petsitting-services&action=add&error=create_failed' . $err));
             }
         }
         exit;
@@ -453,6 +468,9 @@ class Calendar_Petsitting_Services_Admin {
         
         if (isset($_GET['error']) && isset($errors[$_GET['error']])) {
             echo '<div class="notice notice-error is-dismissible"><p>' . esc_html($errors[$_GET['error']]) . '</p></div>';
+            if (!empty($_GET['db_error'])) {
+                echo '<div class="notice notice-error is-dismissible"><p><code>' . esc_html($_GET['db_error']) . '</code></p></div>';
+            }
         }
     }
     
