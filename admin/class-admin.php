@@ -15,11 +15,25 @@ if (!defined('ABSPATH')) {
 class Calendar_Petsitting_Admin {
     
     /**
+     * Admin class instances
+     */
+    private $services_admin;
+    private $bookings_admin;
+    private $unavailabilities_admin;
+    private $settings_admin;
+    
+    /**
      * Constructor
      */
     public function __construct() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
+        
+        // Initialize admin classes
+        $this->services_admin = new Calendar_Petsitting_Services_Admin();
+        $this->bookings_admin = new Calendar_Petsitting_Bookings_Admin();
+        $this->unavailabilities_admin = new Calendar_Petsitting_Unavailabilities_Admin();
+        $this->settings_admin = new Calendar_Petsitting_Settings_Admin();
     }
     
     /**
@@ -170,36 +184,21 @@ class Calendar_Petsitting_Admin {
      * Services page
      */
     public function services_page() {
-        ?>
-        <div class="wrap">
-            <h1><?php _e('Services', 'calendar-petsitting'); ?></h1>
-            <p><?php _e('Page en cours de développement - Services seront gérés ici', 'calendar-petsitting'); ?></p>
-        </div>
-        <?php
+        $this->services_admin->render_services_page();
     }
     
     /**
      * Bookings page
      */
     public function bookings_page() {
-        ?>
-        <div class="wrap">
-            <h1><?php _e('Réservations', 'calendar-petsitting'); ?></h1>
-            <p><?php _e('Page en cours de développement - Réservations seront affichées ici', 'calendar-petsitting'); ?></p>
-        </div>
-        <?php
+        $this->bookings_admin->render_bookings_page();
     }
     
     /**
      * Unavailabilities page
      */
     public function unavailabilities_page() {
-        ?>
-        <div class="wrap">
-            <h1><?php _e('Indisponibilités', 'calendar-petsitting'); ?></h1>
-            <p><?php _e('Page en cours de développement - Indisponibilités seront gérées ici', 'calendar-petsitting'); ?></p>
-        </div>
-        <?php
+        $this->unavailabilities_admin->render_unavailabilities_page();
     }
     
     /**
