@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo - Calendar Pet Sitting</title>
+    
+    <!-- FullCalendar CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet">
+    
+    <!-- Plugin CSS -->
+    <link href="assets/css/public.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .demo-info {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .demo-info h3 {
+            margin-top: 0;
+            color: #2980b9;
+        }
+        
+        .shortcode-example {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐕 Calendar Pet Sitting - Demo</h1>
+        
+        <div class="demo-info">
+            <h3>📋 Instructions d'utilisation</h3>
+            <p>Ce plugin WordPress fournit un calendrier interactif pour les réservations de services de pet-sitting.</p>
+            
+            <h4>Shortcode à utiliser dans WordPress/Divi :</h4>
+            <div class="shortcode-example">[petsitting_calendar]</div>
+            
+            <h4>Avec options :</h4>
+            <div class="shortcode-example">[petsitting_calendar view="week" height="700" service_id="1"]</div>
+            
+            <ul>
+                <li><strong>view</strong> : mois (month), semaine (week) ou jour (day)</li>
+                <li><strong>height</strong> : hauteur du calendrier en pixels</li>
+                <li><strong>service_id</strong> : filtrer par un service spécifique</li>
+            </ul>
+        </div>
+        
+        <!-- Simulation du shortcode rendu -->
+        <div class="petsitting-calendar-container" data-theme="default">
+            <div id="demo-petsitting-calendar" 
+                 class="petsitting-calendar" 
+                 data-view="month"
+                 data-height="600"
+                 data-service-id="">
+            </div>
+            
+            <!-- Loading indicator -->
+            <div class="petsitting-loading" style="display: none;">
+                <div class="petsitting-spinner"></div>
+                <p>Chargement du calendrier...</p>
+            </div>
+        </div>
+        
+        <!-- Example of how the booking modal would appear -->
+        <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 4px;">
+            <h3>💡 Fonctionnalités du plugin :</h3>
+            <ul>
+                <li>✅ Calendrier interactif avec vues mois/semaine/jour</li>
+                <li>✅ Formulaire de réservation en popup</li>
+                <li>✅ Gestion de plusieurs types de services (journalier, horaire, minute)</li>
+                <li>✅ Multi-réservations en une seule soumission</li>
+                <li>✅ Blocage automatique des créneaux réservés</li>
+                <li>✅ Interface d'administration complète</li>
+                <li>✅ Gestion des indisponibilités (ponctuelles et récurrentes)</li>
+                <li>✅ Nettoyage automatique des anciennes données</li>
+                <li>✅ API REST pour les interactions AJAX</li>
+                <li>✅ Intégration Divi via shortcode</li>
+            </ul>
+        </div>
+        
+        <div style="margin-top: 20px; text-align: center; color: #666;">
+            <p><em>Note : Cette démo montre la structure HTML générée par le plugin. 
+            Dans un environnement WordPress actif, le calendrier serait entièrement fonctionnel 
+            avec toutes les fonctionnalités de réservation.</em></p>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+    
+    <script>
+    // Simulation du comportement du plugin
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('demo-petsitting-calendar');
+        
+        // Configuration simulée (normalement injectée par WordPress)
+        window.calendarPetsitting = {
+            restUrl: '/wp-json/petsitting/v1/',
+            strings: {
+                loading: 'Chargement...',
+                error: 'Une erreur s\'est produite'
+            }
+        };
+        
+        // Initialiser FullCalendar avec des données d'exemple
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            height: 600,
+            locale: 'fr',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            buttonText: {
+                today: 'Aujourd\'hui',
+                month: 'Mois',
+                week: 'Semaine',
+                day: 'Jour'
+            },
+            events: [
+                {
+                    title: 'Réservé',
+                    start: '2024-01-15',
+                    end: '2024-01-16',
+                    color: '#dc3545',
+                    display: 'background'
+                },
+                {
+                    title: 'Indisponible',
+                    start: '2024-01-20T14:00:00',
+                    end: '2024-01-20T18:00:00',
+                    color: '#6c757d',
+                    display: 'background'
+                }
+            ],
+            dateClick: function(info) {
+                alert('En mode WordPress, ceci ouvrirait le formulaire de réservation pour le ' + info.dateStr);
+            }
+        });
+        
+        calendar.render();
+    });
+    </script>
+</body>
+</html>

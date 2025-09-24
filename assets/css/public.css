@@ -1,0 +1,416 @@
+/**
+ * Public styles for Calendar Pet Sitting plugin
+ */
+
+/* Calendar Container */
+.petsitting-calendar-container {
+    position: relative;
+    margin: 20px 0;
+}
+
+.petsitting-calendar {
+    min-height: 400px;
+}
+
+/* Loading Indicator */
+.petsitting-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 10;
+}
+
+.petsitting-spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: petsitting-spin 2s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes petsitting-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Error Messages */
+.petsitting-error-message {
+    background-color: #ffeaa7;
+    border: 1px solid #fdcb6e;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #2d3436;
+    display: none;
+}
+
+.petsitting-error-message p {
+    margin: 0;
+}
+
+.petsitting-error-message strong {
+    color: #d63031;
+}
+
+/* Modal Styles */
+.petsitting-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: petsitting-fadeIn 0.3s;
+}
+
+@keyframes petsitting-fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.petsitting-modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    border: none;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    animation: petsitting-slideIn 0.3s;
+}
+
+@keyframes petsitting-slideIn {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.petsitting-modal-header {
+    padding: 20px 25px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.petsitting-modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.petsitting-modal-close {
+    background: none;
+    border: none;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.petsitting-modal-close:hover,
+.petsitting-modal-close:focus {
+    color: #333;
+    background-color: #f5f5f5;
+}
+
+.petsitting-modal-body {
+    padding: 25px;
+}
+
+.petsitting-modal-footer {
+    padding: 15px 25px 25px;
+    text-align: right;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Form Styles */
+.petsitting-form-section {
+    margin-bottom: 30px;
+}
+
+.petsitting-form-section h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 8px;
+}
+
+.petsitting-form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.petsitting-form-row .petsitting-form-group {
+    flex: 1;
+}
+
+.petsitting-form-group {
+    margin-bottom: 15px;
+}
+
+.petsitting-form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+    font-weight: 500;
+}
+
+.petsitting-form-group input,
+.petsitting-form-group select,
+.petsitting-form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.petsitting-form-group input:focus,
+.petsitting-form-group select:focus,
+.petsitting-form-group textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.petsitting-form-group input:invalid,
+.petsitting-form-group select:invalid {
+    border-color: #e74c3c;
+}
+
+.petsitting-form-group.error input,
+.petsitting-form-group.error select,
+.petsitting-form-group.error textarea {
+    border-color: #e74c3c;
+}
+
+.petsitting-form-group.error label {
+    color: #e74c3c;
+}
+
+/* Button Styles */
+.petsitting-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    margin: 0 5px;
+}
+
+.petsitting-btn-primary {
+    background-color: #3498db;
+    color: white;
+}
+
+.petsitting-btn-primary:hover {
+    background-color: #2980b9;
+}
+
+.petsitting-btn-secondary {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.petsitting-btn-secondary:hover {
+    background-color: #7f8c8d;
+}
+
+.petsitting-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Occurrence Management */
+#selected-occurrences {
+    min-height: 50px;
+    margin-bottom: 15px;
+}
+
+.petsitting-occurrence {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.petsitting-occurrence-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.petsitting-occurrence-title {
+    font-weight: 600;
+    color: #333;
+}
+
+.petsitting-occurrence-remove {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    cursor: pointer;
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 3px;
+    transition: background-color 0.3s ease;
+}
+
+.petsitting-occurrence-remove:hover {
+    background-color: #fdeaea;
+}
+
+.petsitting-occurrence-fields {
+    display: flex;
+    gap: 15px;
+}
+
+.petsitting-occurrence-fields .petsitting-form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Booking Summary */
+.petsitting-booking-summary {
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 20px;
+}
+
+.petsitting-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.petsitting-summary-label {
+    color: #333;
+}
+
+.petsitting-summary-value {
+    color: #27ae60;
+}
+
+/* Success Modal */
+.petsitting-success-message {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+.petsitting-success-icon {
+    font-size: 60px;
+    color: #27ae60;
+    margin-bottom: 20px;
+}
+
+.petsitting-success-message p {
+    font-size: 16px;
+    margin: 10px 0;
+    color: #333;
+}
+
+/* FullCalendar Customizations */
+.fc-event-title {
+    font-weight: 500;
+}
+
+.fc-daygrid-event {
+    border-radius: 3px;
+}
+
+.fc-button {
+    text-transform: none !important;
+}
+
+.fc-toolbar-title {
+    font-size: 1.5em !important;
+    font-weight: 600 !important;
+}
+
+/* Available slots highlighting */
+.petsitting-available-slot {
+    background-color: #d5edda !important;
+    border-color: #27ae60 !important;
+    cursor: pointer;
+}
+
+.petsitting-available-slot:hover {
+    background-color: #c3e6cb !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .petsitting-modal-content {
+        width: 95%;
+        margin: 2% auto;
+        max-height: 95vh;
+    }
+    
+    .petsitting-form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .petsitting-occurrence-fields {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .petsitting-modal-footer {
+        text-align: center;
+    }
+    
+    .petsitting-btn {
+        margin: 5px;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .petsitting-modal-header,
+    .petsitting-modal-body,
+    .petsitting-modal-footer {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    .petsitting-modal-header h3 {
+        font-size: 20px;
+    }
+    
+    .petsitting-form-section h4 {
+        font-size: 16px;
+    }
+}
